@@ -1,0 +1,27 @@
+# Python virtual environments
+.venv/
+venv/
+.env/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+*.env
+
+# IDE-specific folders
+.vscode/
+.idea/
+
+# SQLite database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# OS-specific files
+.DS_Store
+Thumbs.db
