@@ -86,6 +86,19 @@ def save_to_db(name, career_goal, python_skill, sql_skill, roadmap):
     except Exception as e:
         st.error(f"Error saving to database: {e}")
         return False
+    
+def delete_student_from_db(student_id):
+    """Deletes a student record from the database by their ID."""
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM students WHERE id = ?", (student_id,))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        st.error(f"Error deleting from database: {e}")
+        return False
 
 # --- 4. MULTI-PAGE NAVIGATION ---
 st.sidebar.title("AcroConnect PoC Navigation")
@@ -139,19 +152,28 @@ elif page == "TPO Dashboard":
         try:
             conn = sqlite3.connect(DB_FILE)
             cursor = conn.cursor()
-            cursor.execute("SELECT name, career_goal, python_skill, sql_skill, generated_roadmap FROM students")
+            cursor.execute("SELECT id, name, career_goal, python_skill, sql_skill, generated_roadmap FROM students")
             data = cursor.fetchall()
             conn.close()
             
             # Display data in a table
             st.dataframe(data,
                 column_config={
+                    "id": "Student ID",
                     "name": "Student Name",
                     "career_goal": "Career Goal",
                     "generated_roadmap": "AI Roadmap"
                 },
                 use_container_width=True
             )
+            # Option to delete a student record
+            st.subheader("Delete a Student Record")
+            student_id_to_delete = st.number_input("Enter Student ID to Delete", min_value=1, step=1)
+            if st.button("Delete Student"):
+                if delete_student_from_db(student_id_to_delete):
+                    st.success(f"Student ID {student_id_to_delete} deleted successfully.")
+                else:
+                    st.error("Failed to delete student.")        
         except Exception as e:
             st.error(f"Error reading from database: {e}")
             
