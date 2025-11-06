@@ -58,6 +58,7 @@ def get_ai_roadmap(career_goal, python_skill, sql_skill):
     - Career Goal: {career_goal}
     - Python Skill: {python_skill} out of 5
     - SQL Skill: {sql_skill} out of 5
+    - 
 
     Generate a 2-week, actionable "Sprint Roadmap" for them.
     The roadmap must be concise, in markdown format, with 3-5 clear action items.
