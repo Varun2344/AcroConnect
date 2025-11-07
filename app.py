@@ -2,6 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 import os
 import sqlite3
+import pandas as pd
 from dotenv import load_dotenv
 
 # --- 1. SETUP AND CONFIGURATION ---
@@ -34,12 +35,14 @@ def init_db():
     cursor = conn.cursor()
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS students (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        career_goal TEXT NOT NULL,
-        python_skill INTEGER,
-        sql_skill INTEGER,
-        generated_roadmap TEXT
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT,
+    phone TEXT,
+    career_goal TEXT NOT NULL,
+    python_skill INTEGER,
+    sql_skill INTEGER,
+    generated_roadmap TEXT
     );
     """)
     conn.commit()
@@ -71,14 +74,14 @@ def get_ai_roadmap(career_goal, python_skill, sql_skill):
         st.error(f"Error generating AI roadmap: {e}")
         return None
 
-def save_to_db(name, career_goal, python_skill, sql_skill, roadmap):
+def save_to_db(name, email, phone, career_goal, python_skill, sql_skill, roadmap):
     """Saves the student's data and their new roadmap to the database."""
     try:
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO students (name, career_goal, python_skill, sql_skill, generated_roadmap) VALUES (?, ?, ?, ?, ?)",
-            (name, career_goal, python_skill, sql_skill, roadmap)
+            "INSERT INTO students (name, email, phone, career_goal, python_skill, sql_skill, generated_roadmap) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (name, email, phone, career_goal, python_skill, sql_skill, roadmap)
         )
         conn.commit()
         conn.close()
@@ -111,6 +114,8 @@ if page == "Student Portal":
     # Create the form for student input
     with st.form("student_profile_form"):
         name = st.text_input("Full Name")
+        email = st.text_input("Email Address")
+        phone = st.text_input("Phone Number")
         career_goal = st.text_input("Dream Career Goal (e.g., Data Scientist, Backend Developer)")
         python_skill = st.slider("Your Python Skill (1=Beginner, 5=Expert)", 1, 5, 3)
         sql_skill = st.slider("Your SQL Skill (1=Beginner, 5=Expert)", 1, 5, 3)
@@ -128,7 +133,7 @@ if page == "Student Portal":
                 
                 if roadmap:
                     # 2. Save to DB
-                    save_to_db(name, career_goal, python_skill, sql_skill, roadmap)
+                    save_to_db(name, email, phone, career_goal, python_skill, sql_skill, roadmap)
                     
                     # 3. Display results
                     st.balloons()
@@ -151,21 +156,27 @@ elif page == "TPO Dashboard":
         st.subheader("All Student Submissions")
         try:
             conn = sqlite3.connect(DB_FILE)
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, name, career_goal, python_skill, sql_skill, generated_roadmap FROM students")
-            data = cursor.fetchall()
+    # 1. Update the SQL query to get the new fields
+            query = "SELECT id, name, email, phone, career_goal, python_skill, sql_skill, generated_roadmap FROM students"
+    
+    # 2. Use Pandas to read the SQL query directly. This automatically gets the column headers!
+            df = pd.read_sql_query(query, conn)
             conn.close()
-            
-            # Display data in a table
-            st.dataframe(data,
-                column_config={
-                    "id": "Student ID",
-                    "name": "Student Name",
-                    "career_goal": "Career Goal",
-                    "generated_roadmap": "AI Roadmap"
-                },
-                use_container_width=True
-            )
+    
+    # 3. Display the pandas DataFrame. It will now have correct headers.
+            st.dataframe(df,
+            column_config={
+            "id": "Student ID",
+            "name": "Student Name",
+            "email": "Email",
+            "phone": "Phone",
+            "career_goal": "Career Goal",
+            "python_skill": "Python (1-5)",
+            "sql_skill": "SQL (1-5)",
+            "generated_roadmap": "AI Roadmap"
+            },
+            use_container_width=True
+        )
             # Option to delete a student record
             st.subheader("Delete a Student Record")
             student_id_to_delete = st.number_input("Enter Student ID to Delete", min_value=1, step=1)
