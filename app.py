@@ -177,6 +177,45 @@ elif page == "TPO Dashboard":
             },
             use_container_width=True
         )
+            
+# --- 4.3 *** NEW: LIVE ANALYTICS *** ---
+            st.subheader("Live Analytics Dashboard")
+            st.write("This dashboard updates in real-time as students submit their profiles.")
+
+# Make sure we have data before trying to plot
+            if not df.empty:
+            # --- Chart 1: Skill Distribution ---
+                st.markdown("#### Student Skill Distribution")
+    
+            # Count the occurrences of each skill level
+                python_dist = df['python_skill'].value_counts().sort_index()
+                sql_dist = df['sql_skill'].value_counts().sort_index()
+
+            # Put them in a new DataFrame for plotting
+                skill_dist_df = pd.DataFrame({
+                    'Python': python_dist,
+                    'SQL': sql_dist
+                }).fillna(0) # Fill in missing skill levels with 0
+
+                st.bar_chart(skill_dist_df, use_container_width=True)
+
+            # --- Chart 2: Average Skill Comparison ---
+                st.markdown("#### Average Skill Comparison")
+    
+            # Calculate the average of each skill
+                avg_python = df['python_skill'].mean()
+                avg_sql = df['sql_skill'].mean()
+
+            # Put them in a new DataFrame for plotting
+                avg_skill_df = pd.DataFrame({
+                     'Average Skill Level': [avg_python, avg_sql]
+                }, index=['Python', 'SQL'])
+
+                st.bar_chart(avg_skill_df, use_container_width=True)
+
+            else:
+                st.info("No student data available to display analytics.")
+
             # Option to delete a student record
             st.subheader("Delete a Student Record")
             student_id_to_delete = st.number_input("Enter Student ID to Delete", min_value=1, step=1)
