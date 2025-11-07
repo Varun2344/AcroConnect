@@ -37,8 +37,8 @@ def init_db():
     CREATE TABLE IF NOT EXISTS students (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    email TEXT,
-    phone TEXT,
+    email TEXT NOT NULL,
+    phone TEXT NOT NULL,
     career_goal TEXT NOT NULL,
     python_skill INTEGER,
     sql_skill INTEGER,
