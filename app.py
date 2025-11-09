@@ -108,7 +108,7 @@ st.sidebar.title("AcroConnect PoC Navigation")
 page = st.sidebar.radio("Go to", ["Home", "Student Portal", "TPO Dashboard"])
 
 if page == "Home":
-    st.title("Welcome to AcroConnect 🎓")
+    st.title("Welcome to AcroConnect")
     st.markdown("### The AITR Placement Readiness Platform")
     st.write("") # Adds a little space
     
@@ -124,12 +124,12 @@ if page == "Home":
     st.subheader("Explore the PoC Features:")
     st.markdown(
         """
-        * **Go to the ➡️ Student Portal:**
+        * **Go to the Student Portal:**
             * Fill out the form to simulate a student creating a profile.
             * This demonstrates our system's **WRITE** capability to the database.
             * It also shows the live **AI INTEGRATION** with the Google Gemini API.
 
-        * **Go to the ➡️ TPO Dashboard:**
+        * **Go to the TPO Dashboard:**
             * Enter the password (`tpo123`) to access the secure admin view.
             * This demonstrates our system's **READ** and **DELETE** capabilities from the database.
             * It also shows the **LIVE ANALYTICS** charts, which are built from the student data.
@@ -138,12 +138,8 @@ if page == "Home":
     
     st.info("Navigate using the sidebar on the left. All features are live and deployed on Streamlit Cloud.")
 
-# This line should come right after the block you just pasted
 elif page == "Student Portal":
-    st.title("🎓 AcroConnect - Student Portal")
-
-if page == "Student Portal":
-    st.title("🎓 AcroConnect - Student Portal")
+    st.title("AcroConnect - Student Portal")
     st.write("Enter your details to get a personalized, AI-generated career roadmap.")
 
     # Create the form for student input
@@ -155,14 +151,14 @@ if page == "Student Portal":
         python_skill = st.slider("Your Python Skill (1=Beginner, 5=Expert)", 1, 5, 3)
         sql_skill = st.slider("Your SQL Skill (1=Beginner, 5=Expert)", 1, 5, 3)
         
-        submitted = st.form_submit_button("🚀 Get My AI Roadmap")
+        submitted = st.form_submit_button("Get My AI Roadmap")
 
     # --- This is the logic that runs when the button is clicked ---
     if submitted:
         if not name or not career_goal:
             st.warning("Please fill out all fields.")
         else:
-            with st.spinner("🚀 Your personal AI is building your roadmap..."):
+            with st.spinner("Your personal AI is building your roadmap..."):
                 # 1. Call the AI
                 roadmap = get_ai_roadmap(career_goal, python_skill, sql_skill)
                 
@@ -177,7 +173,7 @@ if page == "Student Portal":
                     st.markdown(roadmap)
 
 elif page == "TPO Dashboard":
-    st.title("📊 AcroConnect - TPO Dashboard")
+    st.title("AcroConnect - TPO Dashboard")
     st.write("This is the secure area for the TPO to view analytics and student data.")
 
     # --- 4.1 Simple Password Protection ---
