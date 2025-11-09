@@ -105,7 +105,42 @@ def delete_student_from_db(student_id):
 
 # --- 4. MULTI-PAGE NAVIGATION ---
 st.sidebar.title("AcroConnect PoC Navigation")
-page = st.sidebar.radio("Go to", ["Student Portal", "TPO Dashboard"])
+page = st.sidebar.radio("Go to", ["Home", "Student Portal", "TPO Dashboard"])
+
+if page == "Home":
+    st.title("Welcome to AcroConnect 🎓")
+    st.markdown("### The AITR Placement Readiness Platform")
+    st.write("") # Adds a little space
+    
+    st.subheader("About This Project (Proof of Concept)")
+    st.write(
+        """
+        This is the 100% implemented Proof of Concept (PoC) for the AcroConnect Major Project.
+        This PoC demonstrates the **complete, end-to-end data pipeline** which is the
+        foundation for the entire application.
+        """
+    )
+    
+    st.subheader("Explore the PoC Features:")
+    st.markdown(
+        """
+        * **Go to the ➡️ Student Portal:**
+            * Fill out the form to simulate a student creating a profile.
+            * This demonstrates our system's **WRITE** capability to the database.
+            * It also shows the live **AI INTEGRATION** with the Google Gemini API.
+
+        * **Go to the ➡️ TPO Dashboard:**
+            * Enter the password (`tpo123`) to access the secure admin view.
+            * This demonstrates our system's **READ** and **DELETE** capabilities from the database.
+            * It also shows the **LIVE ANALYTICS** charts, which are built from the student data.
+        """
+    )
+    
+    st.info("Navigate using the sidebar on the left. All features are live and deployed on Streamlit Cloud.")
+
+# This line should come right after the block you just pasted
+elif page == "Student Portal":
+    st.title("🎓 AcroConnect - Student Portal")
 
 if page == "Student Portal":
     st.title("🎓 AcroConnect - Student Portal")
