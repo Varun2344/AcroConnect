@@ -54,7 +54,7 @@ init_db()
 
 # --- 3. HELPER FUNCTIONS (The "Guts") ---
 
-def get_ai_roadmap(career_goal, python_skill, sql_skill):
+def get_ai_roadmap(career_goal, python_skill, sql_skill, java_skill):
     """Calls the Gemini API to generate a personalized roadmap."""
     prompt = f"""
     You are an expert career counselor for computer science students.
@@ -75,7 +75,7 @@ def get_ai_roadmap(career_goal, python_skill, sql_skill):
         st.error(f"Error generating AI roadmap: {e}")
         return None
 
-def save_to_db(name, email, phone, career_goal, python_skill, sql_skill, roadmap):
+def save_to_db(name, email, phone, career_goal, python_skill, sql_skill, java_skill, roadmap):
     """Saves the student's data and their new roadmap to the database."""
     try:
         conn = sqlite3.connect(DB_FILE)
