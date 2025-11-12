@@ -42,6 +42,7 @@ def init_db():
     career_goal TEXT NOT NULL,
     python_skill INTEGER,
     sql_skill INTEGER,
+    java_skill INTEGER,
     generated_roadmap TEXT
     );
     """)
@@ -61,7 +62,7 @@ def get_ai_roadmap(career_goal, python_skill, sql_skill):
     - Career Goal: {career_goal}
     - Python Skill: {python_skill} out of 5
     - SQL Skill: {sql_skill} out of 5
-    - 
+    - JAVA Skill: {java_skill} out of 5
 
     Generate a 2-week, actionable "Sprint Roadmap" for them.
     The roadmap must be concise, in markdown format, with 3-5 clear action items.
@@ -80,8 +81,8 @@ def save_to_db(name, email, phone, career_goal, python_skill, sql_skill, roadmap
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO students (name, email, phone, career_goal, python_skill, sql_skill, generated_roadmap) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (name, email, phone, career_goal, python_skill, sql_skill,java_skill, roadmap)
+            "INSERT INTO students (name, email, phone, career_goal, python_skill, sql_skill, java_skill, generated_roadmap) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (name, email, phone, career_goal, python_skill, sql_skill, java_skill, roadmap)
         )
         conn.commit()
         conn.close()
@@ -161,7 +162,7 @@ elif page == "Student Portal":
         else:
             with st.spinner("Your personal AI is building your roadmap..."):
                 # 1. Call the AI
-                roadmap = get_ai_roadmap(career_goal, python_skill, sql_skill,java_skill)
+                roadmap = get_ai_roadmap(career_goal, python_skill, sql_skill, java_skill)
                 
                 if roadmap:
                     # 2. Save to DB
