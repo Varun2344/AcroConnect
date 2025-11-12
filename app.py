@@ -81,7 +81,7 @@ def save_to_db(name, email, phone, career_goal, python_skill, sql_skill, roadmap
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO students (name, email, phone, career_goal, python_skill, sql_skill, generated_roadmap) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (name, email, phone, career_goal, python_skill, sql_skill, roadmap)
+            (name, email, phone, career_goal, python_skill, sql_skill,java_skill, roadmap)
         )
         conn.commit()
         conn.close()
@@ -150,7 +150,8 @@ elif page == "Student Portal":
         career_goal = st.text_input("Dream Career Goal (e.g., Data Scientist, Backend Developer)")
         python_skill = st.slider("Your Python Skill (1=Beginner, 5=Expert)", 1, 5, 3)
         sql_skill = st.slider("Your SQL Skill (1=Beginner, 5=Expert)", 1, 5, 3)
-        
+        java_skill = st.slider("Your JAVA Skill (1=Beginner, 5=Expert)", 1, 5, 3)
+
         submitted = st.form_submit_button("Get My AI Roadmap")
 
     # --- This is the logic that runs when the button is clicked ---
@@ -160,11 +161,11 @@ elif page == "Student Portal":
         else:
             with st.spinner("Your personal AI is building your roadmap..."):
                 # 1. Call the AI
-                roadmap = get_ai_roadmap(career_goal, python_skill, sql_skill)
+                roadmap = get_ai_roadmap(career_goal, python_skill, sql_skill,java_skill)
                 
                 if roadmap:
                     # 2. Save to DB
-                    save_to_db(name, email, phone, career_goal, python_skill, sql_skill, roadmap)
+                    save_to_db(name, email, phone, career_goal, python_skill, sql_skill, java_skill, roadmap)
                     
                     # 3. Display results
                     st.balloons()
@@ -188,7 +189,7 @@ elif page == "TPO Dashboard":
         try:
             conn = sqlite3.connect(DB_FILE)
     # 1. Update the SQL query to get the new fields
-            query = "SELECT id, name, email, phone, career_goal, python_skill, sql_skill, generated_roadmap FROM students"
+            query = "SELECT id, name, email, phone, career_goal, python_skill, sql_skill, java_skill, generated_roadmap FROM students"
     
     # 2. Use Pandas to read the SQL query directly. This automatically gets the column headers!
             df = pd.read_sql_query(query, conn)
@@ -204,6 +205,7 @@ elif page == "TPO Dashboard":
             "career_goal": "Career Goal",
             "python_skill": "Python (1-5)",
             "sql_skill": "SQL (1-5)",
+            "java_skill": "JAVA (1-5)",
             "generated_roadmap": "AI Roadmap"
             },
             use_container_width=True
@@ -221,11 +223,13 @@ elif page == "TPO Dashboard":
             # Count the occurrences of each skill level
                 python_dist = df['python_skill'].value_counts().sort_index()
                 sql_dist = df['sql_skill'].value_counts().sort_index()
+                java_dist = df['java_skill'].value_counts().sort_index()
 
             # Put them in a new DataFrame for plotting
                 skill_dist_df = pd.DataFrame({
                     'Python': python_dist,
-                    'SQL': sql_dist
+                    'SQL': sql_dist,
+                    'JAVA': java_dist
                 }).fillna(0) # Fill in missing skill levels with 0
 
                 st.bar_chart(skill_dist_df, use_container_width=True)
@@ -236,11 +240,12 @@ elif page == "TPO Dashboard":
             # Calculate the average of each skill
                 avg_python = df['python_skill'].mean()
                 avg_sql = df['sql_skill'].mean()
+                avg_java = df['java_skill'].mean()
 
             # Put them in a new DataFrame for plotting
                 avg_skill_df = pd.DataFrame({
-                     'Average Skill Level': [avg_python, avg_sql]
-                }, index=['Python', 'SQL'])
+                     'Average Skill Level': [avg_python, avg_sql, avg_java]
+                }, index=['Python', 'SQL', 'JAVA'])
 
                 st.bar_chart(avg_skill_df, use_container_width=True)
 
