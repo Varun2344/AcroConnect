@@ -141,17 +141,27 @@ def get_all_jobs():
     conn.close()
     return df
 
-# --- 4. MULTI-PAGE NAVIGATION ---
+# --- 4. NAVIGATION CALLBACKS (THE FIX) ---
+# These functions are called by the buttons on the Home Page
+def set_page_student():
+    st.session_state.radio_selection = "Student Portal"
+
+def set_page_tpo():
+    st.session_state.radio_selection = "TPO Dashboard"
+
+
+# --- 5. MULTI-PAGE NAVIGATION ---
 st.sidebar.title("AcroConnect Navigation")
 
 # This session_state logic makes the Home page buttons work
 if 'radio_selection' not in st.session_state:
     st.session_state.radio_selection = "Home"
 
+# The sidebar radio button now reads from session_state
 page = st.sidebar.radio("Go to", ["Home", "Student Portal", "TPO Dashboard"], key="radio_selection")
 
 
-# --- 5. HOME PAGE ---
+# --- 6. HOME PAGE ---
 if page == "Home":
     st.title("Welcome to AcroConnect 🎓")
     st.markdown("### The Intelligent Placement Platform for Modern Institutions")
@@ -180,9 +190,8 @@ if page == "Home":
                 - **Live Job Board:** View all open opportunities posted directly by the TPO.
                 """
             )
-            if st.button("Go to Student Portal", use_container_width=True):
-                st.session_state.radio_selection = "Student Portal"
-                st.experimental_rerun()
+            # This is the FIX: Use on_click to call the helper function
+            st.button("Go to Student Portal", on_click=set_page_student, use_container_width=True)
 
 
     with col2:
@@ -196,14 +205,13 @@ if page == "Home":
                 - **Job Posting:** Post new opportunities directly to the student portal.
                 """
             )
-            if st.button("Go to TPO Dashboard", use_container_width=True):
-                st.session_state.radio_selection = "TPO Dashboard"
-                st.experimental_rerun()
+            # This is the FIX: Use on_click to call the helper function
+            st.button("Go to TPO Dashboard", on_click=set_page_tpo, use_container_width=True)
                 
     st.info("Navigate using the sidebar or the buttons above. The TPO Dashboard password is `tpo123` for this demo.")
 
 
-# --- 6. STUDENT PORTAL PAGE ---
+# --- 7. STUDENT PORTAL PAGE ---
 elif page == "Student Portal":
     st.title("🎓 AcroConnect - Student Portal")
     
@@ -261,14 +269,14 @@ elif page == "Student Portal":
                 with st.expander(f"**{row['title']}** at **{row['company']}**"):
                     st.markdown(row['description'])
 
-# --- 7. TPO DASHBOARD PAGE ---
+# --- 8. TPO DASHBOARD PAGE ---
 elif page == "TPO Dashboard":
     st.title("📊 AcroConnect - TPO Dashboard")
     st.write("Secure area for TPO to view analytics and manage data.")
 
     password = st.text_input("Enter TPO Password", type="password")
     
-    if password == "tpo1s23": # <-- THIS IS YOUR PASSWORD
+    if password == "tpo123": # Corrected password
         st.success("Access Granted")
         
         try:
@@ -289,7 +297,7 @@ elif page == "TPO Dashboard":
                     skill_dist_df = pd.DataFrame({
                         'Python': df['python_skill'].value_counts(),
                         'SQL': df['sql_skill'].value_counts(),
-                        'Communication': df['communication_skill'].value_counts()
+                        'Communication': df['communication_skill'].value_counts(),
                     }).fillna(0).sort_index()
                     st.bar_chart(skill_dist_df, use_container_width=True)
     
