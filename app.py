@@ -15,6 +15,7 @@ if not api_key:
 else:
     try:
         genai.configure(api_key=api_key)
+        # Use the stable, known-to-work model name
         model = genai.GenerativeModel('gemini-1.0-pro')
     except Exception as e:
         st.error(f"Error configuring Gemini API: {e}")
@@ -33,7 +34,7 @@ def init_db():
     """Initializes the SQLite database and creates tables if they don't exist."""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    # Create the students table with the new 'communication_skill'
+    # Create the students table with all columns
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS students (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,7 +67,7 @@ init_db()
 
 def get_ai_roadmap(career_goal, python_skill, sql_skill, comm_skill):
     """Calls the Gemini API to generate a personalized roadmap."""
-    # NEW: Added comm_skill to the prompt
+    # Added comm_skill to the prompt
     prompt = f"""
     You are an expert career counselor. A student has this profile:
     - Career Goal: {career_goal}
@@ -91,7 +92,7 @@ def save_to_db(name, email, phone, career_goal, python_skill, sql_skill, comm_sk
     try:
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        # NEW: Added communication_skill to the INSERT query
+        # Added communication_skill to the INSERT query
         cursor.execute(
             "INSERT INTO students (name, email, phone, career_goal, python_skill, sql_skill, communication_skill, generated_roadmap) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             (name, email, phone, career_goal, python_skill, sql_skill, comm_skill, roadmap)
@@ -141,50 +142,76 @@ def get_all_jobs():
     return df
 
 # --- 4. MULTI-PAGE NAVIGATION ---
-st.sidebar.title("AcroConnect PoC Navigation")
-page = st.sidebar.radio("Go to", ["Home", "Student Portal", "TPO Dashboard"])
+st.sidebar.title("AcroConnect Navigation")
+
+# This session_state logic makes the Home page buttons work
+if 'radio_selection' not in st.session_state:
+    st.session_state.radio_selection = "Home"
+
+page = st.sidebar.radio("Go to", ["Home", "Student Portal", "TPO Dashboard"], key="radio_selection")
 
 
 # --- 5. HOME PAGE ---
 if page == "Home":
     st.title("Welcome to AcroConnect 🎓")
-    st.markdown("### The AITR Placement Readiness Platform")
+    st.markdown("### The Intelligent Placement Platform for Modern Institutions")
     st.write("") 
-    st.subheader("About This Project (Proof of Concept)")
+    
+    st.subheader("Transforming Placement with Data and AI")
     st.write(
         """
-        This is the 100% implemented Proof of Concept (PoC) for the AcroConnect Major Project.
-        This PoC demonstrates the **complete, end-to-end data pipelines** which are the
-        foundation for the entire 8th-semester application.
+        AcroConnect replaces outdated spreadsheets and manual data entry with a single, intelligent, and real-time platform. 
+        We turn your institutional data into your most powerful asset, empowering your Training & Placement Office (TPO) with predictive analytics
+        and providing your students with AI-powered, personalized career guidance.
         """
     )
-    st.subheader("Explore the PoC Features:")
-    st.markdown(
-        """
-        * **Go to the ➡️ Student Portal:**
-            * Fill out the form to get a personalized AI-generated career roadmap.
-            * View all open job postings from the TPO.
-            * This demonstrates the **Student-facing read/write** capabilities.
+    
+    st.subheader("Explore the Platform")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        with st.container(border=True):
+            st.markdown("####  STUDENT PORTAL")
+            st.write(
+                """
+                Our Student Portal is the single source of truth for career readiness. 
+                - **AI-Powered Roadmaps:** Students receive custom, actionable 2-week sprint plans.
+                - **Live Job Board:** View all open opportunities posted directly by the TPO.
+                """
+            )
+            if st.button("Go to Student Portal", use_container_width=True):
+                st.session_state.radio_selection = "Student Portal"
+                st.experimental_rerun()
 
-        * **Go to the ➡️ TPO Dashboard:**
-            * Enter the password (`tpo123`) to access the secure admin view.
-            * View live analytics, see all student data, and delete records.
-            * Post new job openings that will instantly appear for students.
-            * This demonstrates the **Admin-facing read/write** capabilities.
-        """
-    )
+
+    with col2:
+        with st.container(border=True):
+            st.markdown("#### TPO DASHBOARD")
+            st.write(
+                """
+                Our TPO Dashboard is the command center for placement operations.
+                - **Live Analytics:** Instantly visualize your student body's skill profile.
+                - **Data Management:** Search, filter, and manage all student data in one place.
+                - **Job Posting:** Post new opportunities directly to the student portal.
+                """
+            )
+            if st.button("Go to TPO Dashboard", use_container_width=True):
+                st.session_state.radio_selection = "TPO Dashboard"
+                st.experimental_rerun()
+                
+    st.info("Navigate using the sidebar or the buttons above. The TPO Dashboard password is `tpo123` for this demo.")
+
 
 # --- 6. STUDENT PORTAL PAGE ---
 elif page == "Student Portal":
     st.title("🎓 AcroConnect - Student Portal")
     
-    # --- NEW: UI/UX Change ---
     with st.container(border=True):
         st.subheader("Get Your Personalized AI Roadmap")
         st.write("Fill out your profile below. Our AI will generate a custom 2-week sprint plan to help you reach your goals.")
         with st.form("student_profile_form"):
             
-            # --- Personal Info Section ---
             st.markdown("##### 1. Personal Information")
             col1, col2 = st.columns(2)
             with col1:
@@ -193,11 +220,9 @@ elif page == "Student Portal":
                 email = st.text_input("Email Address *", help="Your college email")
             phone = st.text_input("Phone Number", help="Your contact number")
 
-            # --- Career Goal Section ---
             st.markdown("##### 2. Career Goals")
             career_goal = st.text_input("Dream Career Goal *", "Data Scientist", help="e.g., Data Scientist, Backend Developer, UI/UX Designer")
 
-            # --- Skills Section ---
             st.markdown("##### 3. Current Skill Assessment")
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -205,7 +230,6 @@ elif page == "Student Portal":
             with col2:
                 sql_skill = st.slider("SQL Skill (1-5)", 1, 5, 3)
             with col3:
-                # --- NEW: Added Communication Skill ---
                 comm_skill = st.slider("Communication Skill (1-5)", 1, 5, 3)
             
             submitted = st.form_submit_button("🚀 Get My AI Roadmap")
@@ -215,7 +239,6 @@ elif page == "Student Portal":
                 st.warning("Please fill out all required (*) fields.")
             else:
                 with st.spinner("🚀 Your personal AI is building your roadmap..."):
-                    # --- NEW: Pass comm_skill to the AI and DB ---
                     roadmap = get_ai_roadmap(career_goal, python_skill, sql_skill, comm_skill)
                     if roadmap:
                         save_to_db(name, email, phone, career_goal, python_skill, sql_skill, comm_skill, roadmap)
@@ -224,7 +247,6 @@ elif page == "Student Portal":
                         st.markdown(f"### Here is your 2-Week Sprint, {name}:")
                         st.markdown(roadmap)
 
-    # --- NEW: UI/UX Change (Divider) ---
     st.divider()
     
     st.subheader("📢 View Open Job Postings")
@@ -234,7 +256,6 @@ elif page == "Student Portal":
     if jobs_df.empty:
         st.info("No jobs posted yet. Check back soon!")
     else:
-        # --- NEW: UI/UX Change (Container) ---
         with st.container(height=300): # Makes this section scrollable
             for index, row in jobs_df.iterrows():
                 with st.expander(f"**{row['title']}** at **{row['company']}**"):
@@ -247,18 +268,16 @@ elif page == "TPO Dashboard":
 
     password = st.text_input("Enter TPO Password", type="password")
     
-    if password == "tpo123":
+    if password == "tpo1s23": # <-- THIS IS YOUR PASSWORD
         st.success("Access Granted")
         
         try:
             conn = sqlite3.connect(DB_FILE)
-            # --- NEW: Get all columns including communication_skill ---
+            # Get all columns including the new skill
             query = "SELECT id, name, email, phone, career_goal, python_skill, sql_skill, communication_skill FROM students"
             df = pd.read_sql_query(query, conn)
             conn.close()
             
-            # --- TPO ANALYTICS ---
-            # --- NEW: UI/UX Change (Container) ---
             with st.container(border=True):
                 st.subheader("Live Analytics Dashboard")
                 st.write("This dashboard updates in real-time as students submit their profiles.")
@@ -266,7 +285,7 @@ elif page == "TPO Dashboard":
                 if not df.empty:
                     # --- Chart 1: Skill Distribution ---
                     st.markdown("#### Student Skill Distribution")
-                    # --- NEW: Add comm_skill to the chart ---
+                    # Add new skill to the chart
                     skill_dist_df = pd.DataFrame({
                         'Python': df['python_skill'].value_counts(),
                         'SQL': df['sql_skill'].value_counts(),
@@ -276,7 +295,7 @@ elif page == "TPO Dashboard":
     
                     # --- Chart 2: Average Skill Comparison ---
                     st.markdown("#### Average Skill Comparison")
-                    # --- NEW: Add comm_skill to the chart ---
+                    # Add new skill to the chart
                     avg_skill_df = pd.DataFrame({
                         'Average Skill Level': [df['python_skill'].mean(), df['sql_skill'].mean(), df['communication_skill'].mean()]
                     }, index=['Python', 'SQL', 'Communication'])
@@ -284,7 +303,6 @@ elif page == "TPO Dashboard":
                 else:
                     st.info("No student data to display analytics. Submit a student in the Student Portal.")
 
-            # --- TPO STUDENT TABLE ---
             st.subheader("All Student Submissions")
             st.dataframe(df,
                 column_config={
@@ -295,16 +313,14 @@ elif page == "TPO Dashboard":
                     "career_goal": "Career Goal",
                     "python_skill": "Python (1-5)",
                     "sql_skill": "SQL (1-5)",
-                    "communication_skill": "Comm. (1-5)" # --- NEW: Added new column ---
+                    "communication_skill": "Comm. (1-5)" # Added new column
                 },
                 use_container_width=True
             )
             
-            # --- NEW: UI/UX Change (Two columns for forms) ---
             col1, col2 = st.columns(2)
             
             with col1:
-                # --- TPO DELETE FORM ---
                 with st.container(border=True):
                     st.subheader("Delete a Student Record")
                     with st.form("delete_form"):
@@ -319,7 +335,6 @@ elif page == "TPO Dashboard":
                             st.error("Could not delete record. Check the ID.")
             
             with col2:
-                # --- TPO JOB POSTING FORM ---
                 with st.container(border=True):
                     st.subheader("📢 Post a New Job Opening")
                     with st.form("new_job_form"):
